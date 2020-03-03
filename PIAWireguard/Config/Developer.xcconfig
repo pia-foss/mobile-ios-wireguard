@@ -1,0 +1,10 @@
+// Developer.xcconfig
+
+// You Apple developer account's Team ID
+DEVELOPMENT_TEAM = 5357M5NW9W
+
+// The bundle identifier of the apps.
+// Should be an app id created at developer.apple.com
+// with Network Extensions capabilty.
+APP_ID_IOS = 5357M5NW9W
+APP_ID_MACOS = 5357M5NW9W

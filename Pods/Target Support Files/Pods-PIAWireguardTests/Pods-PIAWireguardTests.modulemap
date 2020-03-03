@@ -1,0 +1,6 @@
+framework module Pods_PIAWireguardTests {
+  umbrella header "Pods-PIAWireguardTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
