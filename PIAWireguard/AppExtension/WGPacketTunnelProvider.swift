@@ -25,6 +25,8 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
     var connectivityTimer: Timer?
     var latestWireGuardSettings: WGSettingsResponse!
     let wireGuardMaxConnectionAttempts = 3
+    let connectivityInterval: TimeInterval = 10
+    let pingInterval: TimeInterval = 2
     var wireGuardConnectionAttempts = 0
     
     var providerConfiguration: [String: Any]!

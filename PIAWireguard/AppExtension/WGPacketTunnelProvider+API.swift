@@ -122,7 +122,7 @@ public extension WGPacketTunnelProvider {
                             ifnamePtr.deallocate()
                             wg_log(.info, message: "Tunnel interface is \(self.ifname ?? "unknown")")
 
-                            self.pinger = SwiftyPing(host: ping, configuration: PingConfiguration(interval: 2, with: 5), queue: DispatchQueue.global())
+                            self.pinger = SwiftyPing(host: ping, configuration: PingConfiguration(interval: self.pingInterval, with: 5), queue: DispatchQueue.global())
 
                             let wgConfig = self.uapiConfiguration(serverResponse: serverResponse)
                             let handle = wgConfig.withGoString { return wgTurnOn($0, fileDescriptor) }

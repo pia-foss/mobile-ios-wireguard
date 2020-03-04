@@ -32,7 +32,7 @@ extension WGPacketTunnelProvider {
         
         DispatchQueue.main.async {
             if self.connectivityTimer == nil {
-                self.connectivityTimer = Timer.scheduledTimer(timeInterval: 10,
+                self.connectivityTimer = Timer.scheduledTimer(timeInterval: self.connectivityInterval,
                                                              target: self,
                                                              selector: #selector(self.checkNetworkActivity),
                                                              userInfo: nil,

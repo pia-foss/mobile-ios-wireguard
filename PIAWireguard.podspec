@@ -29,7 +29,6 @@ exec make -C wireguard-go-bridge clean install version-header
 
     s.subspec "AppExtension" do |p|
         p.source_files          = "PIAWireguard/AppExtension/**/*.swift"
-        p.ios.resources         = "PIAWireguard/AppExtension/Resources/**/*"
 
         p.frameworks            = "NetworkExtension"
         p.pod_target_xcconfig   = { "APPLICATION_EXTENSION_API_ONLY" => "YES" }

@@ -69,7 +69,6 @@
 		DDF7F7472406A17300A671C7 /* WGPacketTunnelProvider+Connectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF7F7462406A17300A671C7 /* WGPacketTunnelProvider+Connectivity.swift */; };
 		DDF7F7492406A20400A671C7 /* String+Go.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF7F7482406A20400A671C7 /* String+Go.swift */; };
 		DDF7F74B2406CE4400A671C7 /* WGPacketTunnelProvider+IP.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF7F74A2406CE4400A671C7 /* WGPacketTunnelProvider+IP.swift */; };
-		DDF7F74F2406D8A600A671C7 /* pia.der in Resources */ = {isa = PBXBuildFile; fileRef = DDF7F74E2406D8A600A671C7 /* pia.der */; };
 		DDF7F7512407C4BB00A671C7 /* WGPacketTunnelProvider+API.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF7F7502407C4BB00A671C7 /* WGPacketTunnelProvider+API.swift */; };
 		DDF7F7532408067900A671C7 /* WGEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF7F7522408067900A671C7 /* WGEndpoint.swift */; };
 		F44A6E1399EA01CDAFB0C010 /* Pods_PIAWireguardTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6949438D6FD1DD35B0FE84 /* Pods_PIAWireguardTests.framework */; };
@@ -171,7 +170,6 @@
 		DDF7F7462406A17300A671C7 /* WGPacketTunnelProvider+Connectivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WGPacketTunnelProvider+Connectivity.swift"; sourceTree = "<group>"; };
 		DDF7F7482406A20400A671C7 /* String+Go.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Go.swift"; sourceTree = "<group>"; };
 		DDF7F74A2406CE4400A671C7 /* WGPacketTunnelProvider+IP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WGPacketTunnelProvider+IP.swift"; sourceTree = "<group>"; };
-		DDF7F74E2406D8A600A671C7 /* pia.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pia.der; sourceTree = "<group>"; };
 		DDF7F7502407C4BB00A671C7 /* WGPacketTunnelProvider+API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WGPacketTunnelProvider+API.swift"; sourceTree = "<group>"; };
 		DDF7F7522408067900A671C7 /* WGEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WGEndpoint.swift; sourceTree = "<group>"; };
 		DE6949438D6FD1DD35B0FE84 /* Pods_PIAWireguardTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIAWireguardTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -352,7 +350,6 @@
 		DD677D5623E98B8F0011DE9D /* AppExtension */ = {
 			isa = PBXGroup;
 			children = (
-				DDF7F72C2404159F00A671C7 /* Resources */,
 				DD7411DA23EDB6BA0058CEF3 /* Extensions */,
 				DD7411D523EDAD2B0058CEF3 /* Wireguard */,
 				DD677D5823E98BA70011DE9D /* DNSResolver.swift */,
@@ -404,14 +401,6 @@
 				DDC8F5E323E9C4B1005D19C6 /* Info.plist */,
 			);
 			path = PIAWireguardHost;
-			sourceTree = "<group>";
-		};
-		DDF7F72C2404159F00A671C7 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				DDF7F74E2406D8A600A671C7 /* pia.der */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -539,7 +528,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DDF7F74F2406D8A600A671C7 /* pia.der in Resources */,
 				DD677D3323E2E8960011DE9D /* MiniZip64_info.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
