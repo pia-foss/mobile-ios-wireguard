@@ -67,31 +67,13 @@ public extension WGPacketTunnelProvider {
                 
                 if let serverResponse = try? JSONDecoder().decode(WGServerResponse.self, from: data) {
                     
-                    if #available(iOS 13.0, *) {
-                        
-                        if let metrics = response.metrics,
-                            let metric = metrics.transactionMetrics.first,
-                            let remoteAddress = metric.remoteAddress {
-                            self.serverIPAddress = remoteAddress
-                        } else {
-                            self.serverIPAddress = serverResponse.server_ip
-                        }
-                        
-                        guard !self.serverIPAddress.isEmpty else {
-                            let msg = "WGPacketTunnel: Remote address not found"
-                            self.stopTunnel(withMessage: msg)
-                            return
-                        }
-                        
-                    } else {
-                        self.serverIPAddress = serverResponse.server_ip
-                        guard !self.serverIPAddress.isEmpty else {
-                            let msg = "WGPacketTunnel: Remote address not found"
-                            self.stopTunnel(withMessage: msg)
-                            return
-                        }
+                    self.serverIPAddress = serverResponse.server_ip
+                    guard !self.serverIPAddress.isEmpty else {
+                        let msg = "WGPacketTunnel: Remote address not found"
+                        self.stopTunnel(withMessage: msg)
+                        return
                     }
-                    
+
                     wg_log(.info, staticMessage: "Configuring network settings")
                     
                     self.setTunnelNetworkSettings(self.generateNetworkSettings(withDnsServer: dnsServers,
