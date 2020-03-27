@@ -26,6 +26,7 @@ import NetworkExtension
 import os.log
 import __PIAWireGuardNative
 import Alamofire
+import TweetNacl
 
 @available(iOS 12.0, *)
 public extension WGPacketTunnelProvider {
@@ -50,8 +51,9 @@ public extension WGPacketTunnelProvider {
         }
                 
         //Generate private key
-        wgPrivateKey = Curve25519.generatePrivateKey()
-        wgPublicKey = Curve25519.generatePublicKey(fromPrivateKey: wgPrivateKey)
+        let keys = try! NaclBox.keyPair()
+        wgPublicKey = keys.publicKey
+        wgPrivateKey = keys.secretKey
         
         let baseUrl = WGClientEndpoint.addKey(serverAddress: serverAddress,
                                               port: PIAWireguardConstants.remotePort).url

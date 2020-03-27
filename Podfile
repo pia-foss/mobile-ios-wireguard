@@ -8,6 +8,7 @@ target 'PIAWireguard' do
 
   # Pods for PIAWireguard
   pod 'Alamofire'
+  pod 'TweetNacl', '~> 1.0.0'
 
   target 'PIAWireguardTests' do
     inherit! :search_paths
@@ -22,5 +23,6 @@ target 'PIAWireguardHost' do
 
   # Pods for PIAWireguardHost
   pod 'Alamofire'
-
+  pod 'TweetNacl', '~> 1.0.0'
+  
 end

@@ -25,6 +25,8 @@ exec make -C wireguard-go-bridge clean install version-header
         p.pod_target_xcconfig   = { "SWIFT_INCLUDE_PATHS" => "${PODS_TARGET_SRCROOT}/PIAWireguard/Core",
                                     "APPLICATION_EXTENSION_API_ONLY" => "YES" }
         p.dependency "Alamofire"
+        p.dependency "TweetNacl"
+
     end
 
     s.subspec "AppExtension" do |p|

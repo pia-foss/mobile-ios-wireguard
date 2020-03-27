@@ -1,0 +1,6 @@
+framework module TweetNacl {
+  umbrella header "TweetNacl-umbrella.h"
+
+  export *
+  module * { export * }
+}

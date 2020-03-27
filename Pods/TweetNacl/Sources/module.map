@@ -1,0 +1,4 @@
+module CTweetNacl [system] {
+    header "CTweetNacl/include/ctweetnacl.h"
+    export *
+}
