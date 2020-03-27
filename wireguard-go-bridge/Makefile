@@ -1,9 +1,11 @@
-# SPDX-License-Identifier: GPL-2.0
-#
-# Copyright (C) 2018-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+# This Makefile is going to generate the libwg-go.a library for all iOS platforms (iPhone and Simulator)
 
-# These are generally passed to us by xcode, but we set working defaults for standalone compilation too.
+# First, we are going to generate the library for simulator
 
+ifeq (, $(shell which go))
+ 	$(error "GO is not installed on your system.")
+ endif
+ 
 ARCHS ?= x86_64
 VALID_ARCHS ?= arm64 armv7 x86_64
 
@@ -24,7 +26,6 @@ GOARCH_armv7 := arm
 GOARCH_x86_64 := amd64
 
 build: $(DESTDIR)/libwg-go.a
-version-header: $(DESTDIR)/wireguard-go-version.h
 
 REAL_GOROOT := $(shell go env GOROOT 2>/dev/null)
 export GOROOT := $(BUILDDIR)/goroot
@@ -46,9 +47,6 @@ $(BUILDDIR)/libwg-go-$(1).a: $(GOROOT)/.prepared go.mod
 	rm -f "$(BUILDDIR)/libwg-go-$(1).h"
 endef
 $(foreach ARCH,$(ARCHS),$(eval $(call libwg-go-a,$(ARCH))))
-
-$(DESTDIR)/wireguard-go-version.h: $(GOROOT)/.prepared go.mod
-	go list -m golang.zx2c4.com/wireguard | sed -n 's/.*v\([0-9.]*\).*/#define WIREGUARD_GO_VERSION "\1"/p' > "$@"
 
 $(DESTDIR)/libwg-go.a: $(foreach ARCH,$(ARCHS),$(BUILDDIR)/libwg-go-$(ARCH).a)
 
@@ -79,8 +77,8 @@ $(DESTDIR)/libwg-go.a: $(foreach ARCH,$(VALID_ARCHS),$(BUILDDIR)/libwg-go-$(ARCH
 	$(LIPO) -create -output "$@" $^
 
 clean:
-	rm -rf "$(BUILDDIR)" "$(DESTDIR)/libwg-go.a" "$(DESTDIR)/wireguard-go-version.h"
+	rm -rf "$(BUILDDIR)" "$(DESTDIR)/libwg-go.a"
 
 install: build
 
-.PHONY: clean build version-header install
+.PHONY: clean build install

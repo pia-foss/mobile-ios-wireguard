@@ -24,6 +24,7 @@
 
 /* package command-line-arguments */
 
+#define WIREGUARD_GO_VERSION "0.0.20200121"
 
 #line 1 "cgo-builtin-export-prolog"
 

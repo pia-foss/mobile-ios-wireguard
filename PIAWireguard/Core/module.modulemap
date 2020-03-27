@@ -2,7 +2,6 @@ module __PIAWireGuardNative {
     
     header "unzip.h"
     header "zip.h"
-    header "wireguard-go-version.h"
     header "ringlogger.h"
     header "api-ios.h"
     
