@@ -4,15 +4,15 @@
 
 Private Internet Access is the world's leading consumer VPN service. At Private Internet Access we believe in unfettered access for all, and as a firm supporter of the open source ecosystem we have made the decision to open source our VPN clients. For more information about the PIA service, please visit our website [privateinternetaccess.com][pia-url] or check out the [Wiki][pia-wiki].
 
-# Wireguard library for iOS
+# WireGuard library for iOS
 
-This library provides a simplified Swift implementation of the Wireguard® protocol for iOS, while also taking advantage of the Private Internet Access.
+This library provides a simplified Swift implementation of the WireGuard® protocol for iOS, while also taking advantage of the Private Internet Access.
 
 ## Getting started
 
-This library is based in the Wireguard® library for Apple platforms from Jason A. Donenfeld (https://github.com/WireGuard/wireguard-apple).
+This library is based in the WireGuard® library for Apple platforms from Jason A. Donenfeld (https://github.com/WireGuard/wireguard-apple).
 
-The library uses 2 scripts to generate the wireguard framework that can be used in other projects when you install PIAWireguard as a pod:
+The library uses 2 scripts to generate the WireGuard framework that can be used in other projects when you install PIAWireGuard as a pod:
 
 - create-libwg-go-framework.sh
 - wireguard-go-bridge/build.sh
@@ -33,7 +33,7 @@ It generates a `libwg-go.framework` for the following archs `arm64 armv7 x86_64`
 To use with CocoaPods just add this to your Podfile:
 
 ```ruby
-pod 'PIAWireguard'
+pod 'PIAWireguard', :git => "https://github.com/pia-foss/ios-wireguard"
 ```
     
 ## Documentation
@@ -42,7 +42,7 @@ The library is split into two modules, in order to decouple the low-level protoc
 
 ### How it works
 
-You need to implement an endpoint in your server where you can add the public key generated from the library before to establish the connection with the Wireguard® server. This server should return a `WGServerResponse` json object. The information retrieved from the request, is used to set the tunnel settings, as IP, DNS, etc. 
+You need to implement an endpoint in your server where you can add the public key generated from the library before to establish the connection with the WireGuard® server. This server should return a `WGServerResponse` json object. The information retrieved from the request, is used to set the tunnel settings, as IP, DNS, etc. 
 
 With the `WGServerResponse` json object response, you need to create the uapi configuration as `Go` string and start the tunnel.
 
@@ -50,7 +50,7 @@ To check the connectivity inside the tunnel we compare the received bytes every 
 
 ### Core
 
-Here you will find the Wireguard® utility classes and the low-level entities that we need to use from the AppExtension module. Crypto, Logger and Wireguard® classes are in this module. The *Core* module depends on Alamofire and is mostly platform-agnostic.
+Here you will find the WireGuard® utility classes and the low-level entities that we need to use from the AppExtension module. Crypto, Logger and WireGuard® classes are in this module. The *Core* module depends on Alamofire and is mostly platform-agnostic.
 
 ### AppExtension
 
@@ -58,7 +58,7 @@ The goal of this module is packaging up a black box implementation of a [NEPacke
 
 There are different `WGPacketTunnelProvider` class extensions to separate Message, Connectivity, API methods. 
 
-Currently, Wireguard® VPN only works over UDP.
+Currently, WireGuard® VPN only works over UDP.
 
 ## Contributing
 
@@ -78,7 +78,7 @@ This project is licensed under the [MIT (Expat) license](https://choosealicense.
 
 ## Acknowledgements
 
-- Wireguard® - © Jason A. Donenfeld (https://github.com/WireGuard/wireguard-apple)
+- WireGuard® - © Jason A. Donenfeld (https://github.com/WireGuard/wireguard-apple)
 - Alamofire - © 2014-2020 Alamofire Software Foundation (http://alamofire.org/)
 
 [pia-image]: https://www.privateinternetaccess.com/assets/PIALogo2x-0d1e1094ac909ea4c93df06e2da3db4ee8a73d8b2770f0f7d768a8603c62a82f.png
