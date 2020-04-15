@@ -15,7 +15,7 @@ This library is based in the Wireguard® library for Apple platforms from Jason 
 The library uses 2 scripts to generate the wireguard framework that can be used in other projects when you install PIAWireguard as a pod:
 
 - create-libwg-go-framework.sh
-- wireguard-go-bridge/MAKEFILE
+- wireguard-go-bridge/build.sh
 
 It generates a `libwg-go.framework` for the following archs `arm64 armv7 x86_64`.
 
