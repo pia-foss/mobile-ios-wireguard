@@ -29,6 +29,7 @@ public class PIAWireguardConfiguration: Codable {
         public static let token = "token"
         public static let serial = "serial"
         public static let ping = "ping"
+        public static let useIP = "use_ip"
     }
     
     public private(set) var customDNSServers: [String]

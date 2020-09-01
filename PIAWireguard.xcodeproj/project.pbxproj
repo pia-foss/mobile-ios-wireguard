@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		199F54711356D4990DDB301A /* Pods_PIAWireguardHost.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C42D09771A297D4089099904 /* Pods_PIAWireguardHost.framework */; };
 		55ECA792A4CD51A6D497656B /* Pods_PIAWireguardTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99CC7CA0F184E31407AFE717 /* Pods_PIAWireguardTests.framework */; };
+		82BD951424C5957100A6550D /* PIA-RSA-4096.pem in Resources */ = {isa = PBXBuildFile; fileRef = 82BD951324C5957100A6550D /* PIA-RSA-4096.pem */; };
+		82BD951524C599CC00A6550D /* PIA-RSA-4096.pem in Resources */ = {isa = PBXBuildFile; fileRef = 82BD951324C5957100A6550D /* PIA-RSA-4096.pem */; };
+		82BD951A24C5BB5000A6550D /* PIA.der in Resources */ = {isa = PBXBuildFile; fileRef = 82BD951924C5BB4F00A6550D /* PIA.der */; };
+		82BD951B24C5BB5000A6550D /* PIA.der in Resources */ = {isa = PBXBuildFile; fileRef = 82BD951924C5BB4F00A6550D /* PIA.der */; };
+		82E20B1924FE32E10065EFE3 /* CharacterSetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E20B1824FE32E10065EFE3 /* CharacterSetExtension.swift */; };
 		9820D168FDD8B2FF169BB353 /* Pods_PIAWireguard.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 468C80564286DB8987E3E636 /* Pods_PIAWireguard.framework */; };
 		DD07AAD2242E279D000EE1A3 /* api-ios.h in Headers */ = {isa = PBXBuildFile; fileRef = DD07AAD0242E279D000EE1A3 /* api-ios.h */; };
 		DD1AB0F523F5715400396E74 /* WGSettingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1AB0F423F5715400396E74 /* WGSettingsResponse.swift */; };
@@ -97,6 +102,9 @@
 		3014FAF0E9F645135E0C0D8E /* Pods-PIAWireguardHost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIAWireguardHost.release.xcconfig"; path = "Target Support Files/Pods-PIAWireguardHost/Pods-PIAWireguardHost.release.xcconfig"; sourceTree = "<group>"; };
 		468C80564286DB8987E3E636 /* Pods_PIAWireguard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIAWireguard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EA334775EEEA9739197FD7F /* Pods-PIAWireguard.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIAWireguard.debug.xcconfig"; path = "Target Support Files/Pods-PIAWireguard/Pods-PIAWireguard.debug.xcconfig"; sourceTree = "<group>"; };
+		82BD951324C5957100A6550D /* PIA-RSA-4096.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PIA-RSA-4096.pem"; sourceTree = "<group>"; };
+		82BD951924C5BB4F00A6550D /* PIA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = PIA.der; sourceTree = "<group>"; };
+		82E20B1824FE32E10065EFE3 /* CharacterSetExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSetExtension.swift; sourceTree = "<group>"; };
 		99CC7CA0F184E31407AFE717 /* Pods_PIAWireguardTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIAWireguardTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A862E41D91A861F0EC086DD0 /* Pods-PIAWireguard.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIAWireguard.release.xcconfig"; path = "Target Support Files/Pods-PIAWireguard/Pods-PIAWireguard.release.xcconfig"; sourceTree = "<group>"; };
 		C42D09771A297D4089099904 /* Pods_PIAWireguardHost.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIAWireguardHost.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -199,6 +207,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		82BD951224C5951800A6550D /* Certificates */ = {
+			isa = PBXGroup;
+			children = (
+				82BD951924C5BB4F00A6550D /* PIA.der */,
+				82BD951324C5957100A6550D /* PIA-RSA-4096.pem */,
+			);
+			path = Certificates;
+			sourceTree = "<group>";
+		};
 		9D36CA36CEC0361BF85EBEC0 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -327,6 +344,7 @@
 		DD677D5623E98B8F0011DE9D /* AppExtension */ = {
 			isa = PBXGroup;
 			children = (
+				82BD951224C5951800A6550D /* Certificates */,
 				DD7411DA23EDB6BA0058CEF3 /* Extensions */,
 				DD7411D523EDAD2B0058CEF3 /* Wireguard */,
 				DD677D5823E98BA70011DE9D /* DNSResolver.swift */,
@@ -362,6 +380,7 @@
 				DD7411DB23EDB6C90058CEF3 /* String+NetworkMask.swift */,
 				DD1AB0F823F6A44E00396E74 /* Data+UInt64.swift */,
 				DDF7F7482406A20400A671C7 /* String+Go.swift */,
+				82E20B1824FE32E10065EFE3 /* CharacterSetExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -504,6 +523,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD677D3323E2E8960011DE9D /* MiniZip64_info.txt in Resources */,
+				82BD951424C5957100A6550D /* PIA-RSA-4096.pem in Resources */,
+				82BD951A24C5BB5000A6550D /* PIA.der in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -518,7 +539,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82BD951B24C5BB5000A6550D /* PIA.der in Resources */,
 				DDC8F5E223E9C4B1005D19C6 /* LaunchScreen.storyboard in Resources */,
+				82BD951524C599CC00A6550D /* PIA-RSA-4096.pem in Resources */,
 				DDC8F5DF23E9C4B1005D19C6 /* Assets.xcassets in Resources */,
 				DDC8F5DD23E9C4B0005D19C6 /* Main.storyboard in Resources */,
 			);
@@ -624,6 +647,7 @@
 				DD677D0C23E2E8720011DE9D /* TunnelConfiguration+WgQuickConfig.swift in Sources */,
 				DD677D1623E2E8720011DE9D /* Endpoint.swift in Sources */,
 				DD677D1123E2E8720011DE9D /* TunnelConfiguration.swift in Sources */,
+				82E20B1924FE32E10065EFE3 /* CharacterSetExtension.swift in Sources */,
 				DD677D3023E2E8960011DE9D /* unzip.c in Sources */,
 				DD1AB0FB23F6BFE900396E74 /* LogViewHelper.swift in Sources */,
 				DD677D3223E2E8960011DE9D /* ioapi.c in Sources */,

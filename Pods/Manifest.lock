@@ -7,7 +7,7 @@ DEPENDENCIES:
   - TweetNacl (~> 1.0.0)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Alamofire
     - TweetNacl
 
@@ -17,4 +17,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: a37d7334ade6a293484a865f52ea4b46be2f53fc
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.9.3
