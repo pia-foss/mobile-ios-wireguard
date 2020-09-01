@@ -221,13 +221,17 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
                     }
                 }
             } else {
-                SecTrustEvaluateAsync(trust!, .global()) { (trust, result) in
+
+                DispatchQueue.global().async {
+                    var error: CFError?
+                    let evaluationSucceeded = SecTrustEvaluateWithError(trust, &error)
                     challenge.sender!.use(URLCredential(trust: trust), for: challenge)
-                    if result == SecTrustResultType.proceed {
+                    if evaluationSucceeded {
                         completionHandler(.useCredential, URLCredential(trust: trust))
                     } else {
                         completionHandler(.cancelAuthenticationChallenge, nil)
                     }
+
                 }
             }
 
