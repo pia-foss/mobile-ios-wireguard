@@ -175,9 +175,14 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
 
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust
-        {
-            
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+         
+            guard let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String else {
+                let msg = "WGPacketTunnel: cn not found"
+                self.stopTunnel(withMessage: msg)
+                return
+            }
+
             //SERVER TRUST SETTINGS
             let serverTrust = challenge.protectionSpace.serverTrust
 
@@ -187,6 +192,12 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             var serverCommonName: CFString!
             SecCertificateCopyCommonName(serverCertificate!, &serverCommonName)
             //TODO Compare this value with the CN from the region response
+            
+            if serverCommonName as String != cn {
+                completionHandler(.cancelAuthenticationChallenge, nil)
+                self.stopTunnel(withMessage: "WGPacketTunnel: cn not valid")
+                return
+            }
 
             let bundle = Bundle(for: WGPacketTunnelProvider.self)
             let paths = Set([".der"].map { fileExtension in
@@ -210,34 +221,23 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             //SET CA and SET TRUST OBJECT BETWEEN THE CA AND THE TRUST OBJECT FROM THE SERVER CERTIFICATE
             _ = SecTrustSetAnchorCertificates(trust!, caArray)
 
-            //EVALUATE REQUEST
-            if #available(iOS 13.0, *) {
-                SecTrustEvaluateAsyncWithError(trust!, .global()) { (trust, success, error) in
-                    challenge.sender!.use(URLCredential(trust: trust), for: challenge)
-                    if success {
-                        completionHandler(.useCredential, URLCredential(trust: trust))
-                    } else {
-                        completionHandler(.cancelAuthenticationChallenge, nil)
-                    }
+            DispatchQueue.global().async {
+                var error: CFError?
+                let evaluationSucceeded = SecTrustEvaluateWithError(trust, &error)
+                challenge.sender!.use(URLCredential(trust: trust), for: challenge)
+                if evaluationSucceeded {
+                    completionHandler(.useCredential, URLCredential(trust: trust))
+                } else {
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                    self.stopTunnel(withMessage: "WGPacketTunnel: Error during the certificate validation")
                 }
-            } else {
 
-                DispatchQueue.global().async {
-                    var error: CFError?
-                    let evaluationSucceeded = SecTrustEvaluateWithError(trust, &error)
-                    challenge.sender!.use(URLCredential(trust: trust), for: challenge)
-                    if evaluationSucceeded {
-                        completionHandler(.useCredential, URLCredential(trust: trust))
-                    } else {
-                        completionHandler(.cancelAuthenticationChallenge, nil)
-                    }
-
-                }
             }
 
         } else {
             challenge.sender!.cancel(challenge)
             completionHandler(.cancelAuthenticationChallenge, nil)
+            self.stopTunnel(withMessage: "WGPacketTunnel: request error")
         }
         
       }
