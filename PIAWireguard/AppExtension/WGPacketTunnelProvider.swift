@@ -65,9 +65,20 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
         }
         
         let activationAttemptId = providerConfiguration["activationAttemptId"] as? String
+        
+        guard let useIP = self.providerConfiguration[PIAWireguardConfiguration.Keys.useIP] as? Bool else {
+            let msg = "WGPacketTunnel: use IP key not found"
+            self.stopTunnel(withMessage: msg)
+            return
+        }
 
-        addPublicKeyToServer(serverAddress: serverAddress,
-                             withCompletionHandler: startTunnelCompletionHandler)
+        if useIP {
+            addPublicKeyToServerIp(serverAddress: serverAddress,
+                                   withCompletionHandler: startTunnelCompletionHandler)
+        } else {
+            addPublicKeyToServer(serverAddress: serverAddress,
+                                 withCompletionHandler: startTunnelCompletionHandler)
+        }
         
         configureLogger()
         #if os(macOS)

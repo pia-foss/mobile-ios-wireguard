@@ -31,6 +31,7 @@ Pod::Spec.new do |s|
 
     s.subspec "AppExtension" do |p|
         p.source_files          = "PIAWireguard/AppExtension/**/*.swift"
+        p.resources             = "PIAWireguard/AppExtension/Certificates/**/*"
 
         p.frameworks            = "NetworkExtension"
         p.pod_target_xcconfig   = { "APPLICATION_EXTENSION_API_ONLY" => "YES" }
