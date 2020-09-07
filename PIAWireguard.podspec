@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name              = "PIAWireguard"
-    s.version           = "1.0.0"
+    s.version           = "1.0.1"
     s.summary           = "PIA Wireguard implementation in Swift."
 
     s.homepage          = "https://www.privateinternetaccess.com/"
