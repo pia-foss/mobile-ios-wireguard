@@ -14,8 +14,8 @@ This library is based in the WireGuard® library for Apple platforms from Jason 
 
 The library uses 2 scripts to generate the WireGuard framework.
 
+- create-libwg-go-framework.sh
 - wireguard-go-bridge/build.sh
-- create-libwg-go-xcframework.sh
 
 Together they generate a `PIAWireguardGo.xcframework` under the `frameworks/` directory for the following archs `arm64 armv7 x86_64`.
 
@@ -25,7 +25,7 @@ Together they generate a `PIAWireguardGo.xcframework` under the `frameworks/` di
 
 - iOS 12.0+
 - Xcode 10+ (Swift 5)
-- Go 1.17
+- Go 1.16 
 - Git (preinstalled with Xcode Command Line Tools)
 
 ### Swift Package Manager
