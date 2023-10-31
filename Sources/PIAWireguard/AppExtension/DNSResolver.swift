@@ -108,7 +108,7 @@ class DNSResolver {
 
 extension Endpoint {
     func withReresolvedIP() -> Endpoint {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         var ret = self
         let hostname: String
         switch host {
