@@ -12,7 +12,7 @@ This library provides a simplified Swift implementation of the WireGuard® proto
 
 This library is based in the WireGuard® library for Apple platforms from Jason A. Donenfeld (https://github.com/WireGuard/wireguard-apple).
 
-The library uses 2 scripts to generate the WireGuard framework.
+The library uses 2 scripts to generate the WireGuard frame  work.
 
 - create-libwg-go-framework.sh
 - wireguard-go-bridge/build.sh

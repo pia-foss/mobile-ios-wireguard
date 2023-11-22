@@ -1,6 +1,6 @@
 # Contribution Guidelines
 Private Internet Access welcomes community contributions, and are always looking for ways in which to improve. Please take a look at our contribution guidelines, and get involved with the PIA community.
-
+/Users/laura.s/XV/pia-foss/mobile-ios-library/wireguard-apple
 ## Bugs and Issues
 Have you found a bug? Is our software behaving in an unexpected way? Please check the open issues for duplicates -- perhaps a fix is already in development, or maybe a solution has already been published. 
 If not then please submit a bug report using our [template](/.github/ISSUE_TEMPLATE.md)
