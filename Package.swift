@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "WireGuardKit",
+    name: "PIAWireguard",
     platforms: [
         .iOS(.v12)
     ],
     products: [
-        .library(name: "WireGuardKit", targets: ["WireGuardKit"])
+        .library(name: "PIAWireguard", targets: ["WireGuardKit"])
     ],
     dependencies: [],
     targets: [

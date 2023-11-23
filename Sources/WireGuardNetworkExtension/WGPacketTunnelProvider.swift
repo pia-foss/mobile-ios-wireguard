@@ -5,7 +5,7 @@ import Foundation
 import NetworkExtension
 import os
 
-class PacketTunnelProvider: NEPacketTunnelProvider {
+public class WGPacketTunnelProvider: NEPacketTunnelProvider {
 
     private lazy var adapter: WireGuardAdapter = {
         return WireGuardAdapter(with: self) { logLevel, message in
