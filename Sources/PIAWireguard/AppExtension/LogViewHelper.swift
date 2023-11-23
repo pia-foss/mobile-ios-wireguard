@@ -2,7 +2,7 @@
 // Copyright © 2018-2019 WireGuard LLC. All Rights Reserved.
 
 import Foundation
-import __PIAWireGuardNative
+//import __PIAWireGuardNative
 
 public class LogViewHelper {
     var log: OpaquePointer

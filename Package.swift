@@ -13,7 +13,7 @@ let package = Package(
             name: "PIAWireguard", 
             targets: [
                 "PIAWireguard",
-                "PIAWireguardC",
+                "WireGuardKitC",
                 "PIAWireguardGo",
             ]
         ),
@@ -27,7 +27,7 @@ let package = Package(
         .target(
             name: "PIAWireguard", 
             dependencies: [
-                "PIAWireguardC",
+                "WireGuardKitC",
                 "Alamofire",
                 .product(name: "TweetNacl", package: "tweetnacl-swiftwrap"),
             ],
@@ -36,8 +36,9 @@ let package = Package(
             ]
         ),
         .target(
-            name: "PIAWireguardC", 
-            dependencies: [ ]
+            name: "WireGuardKitC", 
+            dependencies: [],
+            publicHeadersPath: "."
         ),
         .binaryTarget(
             name: "PIAWireguardGo",

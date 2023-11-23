@@ -24,7 +24,7 @@ import Foundation
 
 import NetworkExtension
 import os.log
-import __PIAWireGuardNative
+//import __PIAWireGuardNative
 
 extension WGPacketTunnelProvider {
 

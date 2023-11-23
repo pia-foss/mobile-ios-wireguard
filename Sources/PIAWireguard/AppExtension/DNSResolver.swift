@@ -3,7 +3,7 @@
 
 import Network
 import Foundation
-import __PIAWireGuardNative
+//import __PIAWireGuardNative
 
 class DNSResolver {
 

@@ -24,7 +24,7 @@ import Foundation
 import Network
 import NetworkExtension
 import os.log
-import __PIAWireGuardNative
+//import __PIAWireGuardNative
 import Alamofire
 import TweetNacl
 

@@ -4,7 +4,7 @@
 import Foundation
 import Network
 import NetworkExtension
-import __PIAWireGuardNative
+//import __PIAWireGuardNative
 
 class PacketTunnelSettingsGenerator {
     let tunnelConfiguration: TunnelConfiguration

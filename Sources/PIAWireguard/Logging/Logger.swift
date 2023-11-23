@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-// Copyright © 2018-2019 WireGuard LLC. All Rights Reserved.
+// Copyright © 2018-2023 WireGuard LLC. All Rights Reserved.
 
 import Foundation
 import os.log
-import __PIAWireGuardNative
 
 public class Logger {
     enum LoggerError: Error {
@@ -50,8 +49,8 @@ public class Logger {
         if let appBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
             appVersion += " (\(appBuild))"
         }
-        let goBackendVersion = wgVersion()
-        Logger.global?.log(message: "App version: \(appVersion); Go backend version: \(goBackendVersion)")
+
+        Logger.global?.log(message: "App version: \(appVersion)")
     }
 }
 
@@ -64,3 +63,4 @@ func wg_log(_ type: OSLogType, message msg: String) {
     os_log("%{public}s", log: OSLog.default, type: type, msg)
     Logger.global?.log(message: msg)
 }
+
