@@ -1,4 +1,5 @@
 module WireGuardKitC {
     umbrella header "WireGuardKitC.h"
+    header "ringlogger.h"
     export *
 }
