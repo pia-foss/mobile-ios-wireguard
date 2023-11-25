@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -26,18 +26,5 @@ let package = Package(
             name: "PIAWireguardGo",
             path: "PIAWireguardGo.xcframework"
         ),
-//        .target(
-//            name: "WireGuardKitGo",
-//            dependencies: [],
-//            exclude: [
-//                "goruntime-boottime-over-monotonic.diff",
-//                "go.mod",
-//                "go.sum",
-//                "api-apple.go",
-//                "Makefile"
-//            ],
-//            publicHeadersPath: ".",
-//            linkerSettings: [.linkedLibrary("wg-go")]
-//        )
     ]
 )

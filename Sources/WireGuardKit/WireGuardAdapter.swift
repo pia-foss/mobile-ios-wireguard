@@ -4,8 +4,6 @@
 import Foundation
 import NetworkExtension
 
-import WireGuardKitC
-
 #if SWIFT_PACKAGE
 import WireGuardKitC
 #endif
