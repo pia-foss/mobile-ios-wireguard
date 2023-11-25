@@ -1,2 +1,2 @@
 #include "WireGuardKitC.h"
-#include "../Shared/Logging/ringlogger.h"
+#include "ringlogger.h"

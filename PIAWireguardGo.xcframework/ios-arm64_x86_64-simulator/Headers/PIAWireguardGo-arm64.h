@@ -19,7 +19,7 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
-#line 8 "api-ios.go"
+#line 8 "api-apple.go"
  #include <stdlib.h>
  #include <sys/types.h>
  static void callLogger(void *func, void *ctx, int level, const char *msg)

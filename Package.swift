@@ -9,31 +9,35 @@ let package = Package(
         .iOS(.v12)
     ],
     products: [
-        .library(name: "PIAWireguard", targets: ["WireGuardKit"])
+        .library(name: "PIAWireguard", targets: ["WireGuardKit", "PIAWireguardGo", "WireGuardKitC"])
     ],
-    dependencies: [],
+    dependencies: [.package(url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", .exact("1.1.0"))],
     targets: [
         .target(
             name: "WireGuardKit",
-            dependencies: ["WireGuardKitGo", "WireGuardKitC"]
+            dependencies: ["WireGuardKitC", .product(name: "TweetNacl", package: "tweetnacl-swiftwrap")]
         ),
         .target(
             name: "WireGuardKitC",
             dependencies: [],
             publicHeadersPath: "."
         ),
-        .target(
-            name: "WireGuardKitGo",
-            dependencies: [],
-            exclude: [
-                "goruntime-boottime-over-monotonic.diff",
-                "go.mod",
-                "go.sum",
-                "api-apple.go",
-                "Makefile"
-            ],
-            publicHeadersPath: ".",
-            linkerSettings: [.linkedLibrary("wg-go")]
-        )
+        .binaryTarget(
+            name: "PIAWireguardGo",
+            path: "PIAWireguardGo.xcframework"
+        ),
+//        .target(
+//            name: "WireGuardKitGo",
+//            dependencies: [],
+//            exclude: [
+//                "goruntime-boottime-over-monotonic.diff",
+//                "go.mod",
+//                "go.sum",
+//                "api-apple.go",
+//                "Makefile"
+//            ],
+//            publicHeadersPath: ".",
+//            linkerSettings: [.linkedLibrary("wg-go")]
+//        )
     ]
 )
