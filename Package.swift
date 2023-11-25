@@ -15,7 +15,10 @@ let package = Package(
     targets: [
         .target(
             name: "WireGuardKit",
-            dependencies: ["WireGuardKitC", .product(name: "TweetNacl", package: "tweetnacl-swiftwrap")]
+            dependencies: ["WireGuardKitC", .product(name: "TweetNacl", package: "tweetnacl-swiftwrap")],
+            resources: [
+                .process("Resources")
+            ]
         ),
         .target(
             name: "WireGuardKitC",
