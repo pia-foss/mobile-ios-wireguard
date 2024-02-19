@@ -19,9 +19,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", .exact("1.1.0")),
-        .package(url: "https://github.com/Alamofire/Alamofire.git", .exact("5.0.1")),
-
+        .package(url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", exact: "1.1.0"),
+        .package(url: "https://github.com/Alamofire/Alamofire.git", exact: "5.8.1"),
     ],
     targets: [
         .target(

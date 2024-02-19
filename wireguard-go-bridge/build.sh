@@ -21,7 +21,7 @@ rsync --exclude="pkg/obj/go-build" -a "$(go env GOROOT)/" "$GOROOT/"
 export GOROOT
 cat goruntime-*.diff | patch -p1 -fN -r- -d "$GOROOT"
 
-BUILD_CFLAGS="-fembed-bitcode -Wno-unused-command-line-argument"
+BUILD_CFLAGS=""
 
 # Build the library for each target
 function build_arch() {
@@ -34,12 +34,9 @@ function build_arch() {
     local FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH"
     SDK_LIBRARY_OUTPUT="$LIBRARY_OUTPUT_ROOT/$SDKNAME"
     mkdir -p $SDK_LIBRARY_OUTPUT/include
-    CGO_ENABLED=1 CGO_CFLAGS="$FULL_CFLAGS" CGO_LDFLAGS="$FULL_CFLAGS" GOOS=darwin GOARCH="$GOARCH" \
-        go build -tags ios -ldflags=-w -trimpath -v -o "$SDK_LIBRARY_OUTPUT/$LBAME-$ARCH.a" -buildmode c-archive
+    CGO_ENABLED=1 CGO_CFLAGS="$FULL_CFLAGS" CGO_LDFLAGS="$FULL_CFLAGS" GOOS=ios GOARCH="$GOARCH" \
+        go build -ldflags=-w -trimpath -v -o "$SDK_LIBRARY_OUTPUT/$LBAME.a" -buildmode c-archive
     mv $SDK_LIBRARY_OUTPUT/*.h $SDK_LIBRARY_OUTPUT/include
-    LIPO="${LIPO:-lipo}"
-   "$LIPO" -create -output "$SDK_LIBRARY_OUTPUT/$LBAME.a" $SDK_LIBRARY_OUTPUT/*.a
-    rm "$SDK_LIBRARY_OUTPUT/$LBAME-$ARCH.a"
 }
 
 
@@ -54,4 +51,3 @@ build_arch arm64 arm64 appletvsimulator tvos
 # Copy artifacts
 mkdir -p $ARTIFACTS_ROOT
 cp -r $LIBRARY_OUTPUT_ROOT/* "$ARTIFACTS_ROOT"
-

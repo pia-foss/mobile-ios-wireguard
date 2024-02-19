@@ -6,6 +6,7 @@ import Network
 import NetworkExtension
 import os.log
 import __PIAWireGuardNative
+import Alamofire
 
 open class WGPacketTunnelProvider: NEPacketTunnelProvider {
 
@@ -30,10 +31,12 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
     
     var providerConfiguration: [String: Any]!
 
+    var session: Session?
+
     deinit {
         networkMonitor?.cancel()
     }
-    
+
     override open func startTunnel(options: [String: NSObject]?, completionHandler startTunnelCompletionHandler: @escaping (Error?) -> Void) {
 
         guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
@@ -53,6 +56,33 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
             self.stopTunnel(withMessage: msg)
             return
         }
+
+
+
+#if SWIFT_PACKAGE
+        let bundle = Bundle.module
+#else
+        let bundle = Bundle(for: WGPacketTunnelProvider.self)
+#endif
+        let paths = Set([".der"].map { fileExtension in
+            bundle.paths(forResourcesOfType: fileExtension, inDirectory: nil)
+        }.joined())
+
+        let path = paths.first!
+        let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData
+        let caRef = SecCertificateCreateWithData(nil, certificateData!)
+
+        let evaluators: [String: ServerTrustEvaluating] = [
+            serverAddress: PinnedCertificatesTrustEvaluator(
+                certificates: [caRef!],
+                acceptSelfSignedCertificates: true,
+                performDefaultValidation: false,
+                validateHost: false
+            )
+        ]
+        let serverTrustManager = ServerTrustManager(evaluators: evaluators)
+        session = Session(serverTrustManager: serverTrustManager)
+
 
         self.providerConfiguration = providerConfiguration
         
