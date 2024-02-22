@@ -211,9 +211,9 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
     }
 
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        
+
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-         
+
             guard let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String else {
                 let msg = "WGPacketTunnel: cn not found"
                 self.stopTunnel(withMessage: msg)
@@ -228,26 +228,28 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             }
 
             //GET SERVER CERTIFICATE
-//            let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0)
-
-            //GET SERVER CERTIFICATE
-            var serverCertificate: SecCertificate?
+            var chain: [SecCertificate]
             if #available(iOS 15.0, *) {
-                let certificates = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate]
-                serverCertificate = certificates?.first
+                guard let unwrappedChain = SecTrustCopyCertificateChain(serverTrust) else {
+                    return
+                }
+                chain = unwrappedChain as! [SecCertificate]
             } else {
-                serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0)
+                guard let unwrappedCert = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+                    return
+                }
+                chain = [unwrappedCert]
             }
 
-            var serverCommonName: CFString!
-            SecCertificateCopyCommonName(serverCertificate!, &serverCommonName)
-            //TODO Compare this value with the CN from the region response
-            
-            if serverCommonName as String != cn {
-                completionHandler(.cancelAuthenticationChallenge, nil)
-                self.stopTunnel(withMessage: "WGPacketTunnel: cn not valid")
-                return
-            }
+//            var serverCommonName: CFString!
+//            SecCertificateCopyCommonName(serverCertificate!, &serverCommonName)
+//            //TODO Compare this value with the CN from the region response
+//
+//            if serverCommonName as String != cn {
+//                completionHandler(.cancelAuthenticationChallenge, nil)
+//                self.stopTunnel(withMessage: "WGPacketTunnel: cn not valid")
+//                return
+//            }
 
 #if SWIFT_PACKAGE
             let bundle = Bundle.module
@@ -260,40 +262,36 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
 
             let path = paths.first!
             let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData
-            let caRef = SecCertificateCreateWithData(nil, certificateData!)
+            let anchor = SecCertificateCreateWithData(nil, certificateData!)
 
             //ARRAY OF CA CERTIFICATES
-            let caArray = [caRef] as CFArray
-            
+            let anchorArray = [anchor] as CFArray
+
             //SET DEFAULT SSL POLICY
-            let policy = SecPolicyCreateSSL(true, nil)
+            let policy = SecPolicyCreateBasicX509()
             var trust: SecTrust!
-            
+
             //Creates a trust management object based on certificates and policies
-            let trustCreation = SecTrustCreateWithCertificates([serverCertificate!] as CFArray, policy, &trust)
+            let trustCreation = SecTrustCreateWithCertificates(chain as CFArray, policy, &trust)
             if trustCreation != errSecSuccess {
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 self.stopTunnel(withMessage: "WGPacketTunnel: trustCreation not valid")
             }
 
             //SET CA and SET TRUST OBJECT BETWEEN THE CA AND THE TRUST OBJECT FROM THE SERVER CERTIFICATE
-            let trustAnchor = SecTrustSetAnchorCertificates(trust!, caArray)
+            let trustAnchor = SecTrustSetAnchorCertificates(trust, anchorArray)
             if trustAnchor != errSecSuccess {
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 self.stopTunnel(withMessage: "WGPacketTunnel: trustAnchor not valid")
             }
 
             DispatchQueue.global().async {
-                var error: CFError?
-                let evaluationSucceeded = SecTrustEvaluateWithError(trust, &error)
-                challenge.sender!.use(URLCredential(trust: serverTrust), for: challenge)
-                if evaluationSucceeded {
+                if SecTrustEvaluateWithError(trust, nil) {
                     completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 } else {
                     completionHandler(.cancelAuthenticationChallenge, nil)
                     self.stopTunnel(withMessage: "WGPacketTunnel: Error during the certificate validation")
                 }
-
             }
 
         } else {
@@ -301,7 +299,6 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             completionHandler(.cancelAuthenticationChallenge, nil)
             self.stopTunnel(withMessage: "WGPacketTunnel: request error")
         }
-        
-      }
 
+    }
 }
