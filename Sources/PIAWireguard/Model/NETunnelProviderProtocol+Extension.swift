@@ -66,7 +66,7 @@ public extension NETunnelProviderProtocol {
         if let oldConfig = providerConfiguration?["WgQuickConfig"] as? String {
             #if os(macOS)
             providerConfiguration = ["UID": getuid()]
-            #elseif os(iOS) || os(tvOS)
+            #elseif os(iOS)
             providerConfiguration = nil
             #else
             #error("Unimplemented")

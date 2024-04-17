@@ -31,16 +31,10 @@ function check_bitcode() {
 FWDIR="$FWROOT/$FWNAME.xcframework"
 SIMULATOR="lib/iphonesimulator"
 IPHONE="lib/iphoneos"
-TVOSSIMULATOR="lib/appletvsimulator"
-TVOS="lib/appletvos"
 xcodebuild -create-xcframework \
 -library $IPHONE/$FWNAME.a \
 -headers $IPHONE/include \
 -library $SIMULATOR/$FWNAME.a \
 -headers $SIMULATOR/include \
--library $TVOSSIMULATOR/$FWNAME.a \
--headers $TVOSSIMULATOR/include \
--library $TVOS/$FWNAME.a \
--headers $TVOS/include \
 -output $FWDIR
 
