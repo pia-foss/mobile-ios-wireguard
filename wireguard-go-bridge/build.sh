@@ -47,10 +47,6 @@ build_arch x86_64 amd64 iphonesimulator
 build_arch arm64 arm64 iphoneos
 build_arch arm64 arm64 iphonesimulator
 
-build_arch x86_64 amd64 appletvsimulator tvos
-build_arch arm64 arm64 appletvos tvos
-build_arch arm64 arm64 appletvsimulator tvos
-
 # Copy artifacts
 mkdir -p $ARTIFACTS_ROOT
 cp -r $LIBRARY_OUTPUT_ROOT/* "$ARTIFACTS_ROOT"
