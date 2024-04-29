@@ -215,17 +215,18 @@ extension WGPacketTunnelProvider {
         let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
         do {
-            try connection.connect { error, data in
+            try connection.connect {[weak self] error, data in
                 if let error {
                     wg_log(.error, message: error.localizedDescription)
-                } else if let data {
-                    self.parse(data, withCompletionHandler: completionHandler)
-                }
+                    self?.stopTunnel(withMessage: error.localizedDescription)
                     
+                } else if let data {
+                    self?.parse(data, withCompletionHandler: completionHandler)
+                }
             } completion: {
-               // No op
+                // No op
             }
-
+            
         } catch {
             wg_log(.error, message: error.localizedDescription)
             stopTunnel(withMessage: error.localizedDescription)
