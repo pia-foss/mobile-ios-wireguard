@@ -203,6 +203,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             }
             
         } else {
+            print("PIADebug: unable to parse data")
             let msg = "WGPacketTunnel: unable to parse data: \(String(data: data, encoding: .utf8) ?? data.description) ourKey: \(self.wgPublicKey.base64EncodedString())"
             self.stopTunnel(withMessage: msg)
         }
@@ -216,6 +217,13 @@ extension WGPacketTunnelProvider {
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
         do {
             try connection.connect { error, data in
+                let absoluteString = url.absoluteString
+                let commonName = cn
+                print("PIADebug: url \(absoluteString) cn \(commonName)")
+                print("PIADebug: data \(data) error \(error)")
+                if error == nil && data == nil {
+                    print("PIADebug: both nil!")
+                }
                 if let error {
                     wg_log(.error, message: error.localizedDescription)
                 } else if let data {
@@ -223,10 +231,11 @@ extension WGPacketTunnelProvider {
                 }
                     
             } completion: {
-               // No op
+               print("PIADebug: completion reached")
             }
 
         } catch {
+            print("PIADebug: catch \(error)")
             wg_log(.error, message: error.localizedDescription)
             stopTunnel(withMessage: error.localizedDescription)
         }
