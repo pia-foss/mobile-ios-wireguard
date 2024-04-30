@@ -27,7 +27,6 @@ import os.log
 import __PIAWireGuardNative
 import Alamofire
 import TweetNacl
-import NWHttpConnection
 
 extension WGPacketTunnelProvider: URLSessionDelegate {
     
@@ -50,18 +49,17 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         
         let params = [PIAWireguardConstants.API.publicKeyParameter: wgPublicKey.base64EncodedString(),
                       PIAWireguardConstants.API.authTokenParameter: piaToken]
-        
-        var reqURLComponents = URLComponents(string: baseUrl.absoluteString)
-        var reqQueryItems: [URLQueryItem] = []
-        for param in params {
-            let queryItem = URLQueryItem(name: param.key, value: param.value)
-            reqQueryItems.append(queryItem)
-        }
-        reqURLComponents?.queryItems = reqQueryItems
-        
-        if let reqURL = reqURLComponents?.url,
-           let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String {
-            startNWConnection(for: reqURL, cn: cn, completionHandler: startTunnelCompletionHandler)
+
+        _ = AF.request(baseUrl, method: .get, parameters: params, encoding: URLEncoding.default).response { (response) in
+            if let error = response.error {
+                let msg = "WGPacketTunnel: request resulted in a error: \(error.localizedDescription)"
+                self.stopTunnel(withMessage: msg)
+            } else if let data = response.data {
+                self.parse(data, withCompletionHandler: startTunnelCompletionHandler)
+            } else {
+                let msg = "WGPacketTunnel: no data to parse. Response code was: \(String(describing: response.response?.statusCode))"
+                self.stopTunnel(withMessage: msg)
+            }
         }
 
     }
@@ -79,16 +77,21 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         let keys = try! NaclBox.keyPair()
         wgPublicKey = keys.publicKey
         wgPrivateKey = keys.secretKey
-        
-        let reqURL = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(wgPublicKey.base64EncodedString())&pt=\(piaToken)")
-        
-        if let reqURL,
-           let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String {
 
-            startNWConnection(for: reqURL, cn: cn, completionHandler: startTunnelCompletionHandler)
+        
+        let url = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(wgPublicKey.base64EncodedString().addingPercentEncoding(withAllowedCharacters:.rfc3986Unreserved)!)&pt=\(piaToken)")!
+
+        let sessionConfig = URLSessionConfiguration.default
+        let session = URLSession(configuration: sessionConfig, delegate: self, delegateQueue: nil)
+
+        let task = session.dataTask(with: url) {(data, response, error) in
+            
+            guard let data = data else { return }
+            self.parse(data, withCompletionHandler: startTunnelCompletionHandler)
+
         }
-        
 
+        task.resume()
     }
     
     private var tunnelFileDescriptor: Int32? {
@@ -208,28 +211,77 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         }
     }
 
-}
-
-extension WGPacketTunnelProvider {
-    func startNWConnection(for url: URL, cn: String, completionHandler: @escaping (Error?) -> Void) {
-        let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
-        let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
-        do {
-            try connection.connect {[weak self] error, data in
-                if let error {
-                    wg_log(.error, message: error.localizedDescription)
-                    self?.stopTunnel(withMessage: error.localizedDescription)
-                    
-                } else if let data {
-                    self?.parse(data, withCompletionHandler: completionHandler)
-                }
-            } completion: {
-                // No op
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+         
+            guard let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String else {
+                let msg = "WGPacketTunnel: cn not found"
+                self.stopTunnel(withMessage: msg)
+                return
             }
+
+            //SERVER TRUST SETTINGS
+            let serverTrust = challenge.protectionSpace.serverTrust
+
+            //GET SERVER CERTIFICATE
+            let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust!, 0)
             
-        } catch {
-            wg_log(.error, message: error.localizedDescription)
-            stopTunnel(withMessage: error.localizedDescription)
+            var serverCommonName: CFString!
+            SecCertificateCopyCommonName(serverCertificate!, &serverCommonName)
+            //TODO Compare this value with the CN from the region response
+            
+            if serverCommonName as String != cn {
+                completionHandler(.cancelAuthenticationChallenge, nil)
+                self.stopTunnel(withMessage: "WGPacketTunnel: cn not valid")
+                return
+            }
+
+#if SWIFT_PACKAGE
+            let bundle = Bundle.module
+#else
+            let bundle = Bundle(for: WGPacketTunnelProvider.self)
+#endif
+            let paths = Set([".der"].map { fileExtension in
+                bundle.paths(forResourcesOfType: fileExtension, inDirectory: nil)
+            }.joined())
+
+            let path = paths.first!
+            let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData
+            let caRef = SecCertificateCreateWithData(nil, certificateData!)
+
+            //ARRAY OF CA CERTIFICATES
+            let caArray = [caRef] as CFArray
+            
+            //SET DEFAULT SSL POLICY
+            let policy = SecPolicyCreateSSL(true, nil)
+            var trust: SecTrust!
+            
+            //Creates a trust management object based on certificates and policies
+            _ = SecTrustCreateWithCertificates([serverCertificate!] as CFArray, policy, &trust)
+
+            //SET CA and SET TRUST OBJECT BETWEEN THE CA AND THE TRUST OBJECT FROM THE SERVER CERTIFICATE
+            _ = SecTrustSetAnchorCertificates(trust!, caArray)
+
+            DispatchQueue.global().async {
+                var error: CFError?
+                let evaluationSucceeded = SecTrustEvaluateWithError(trust, &error)
+                challenge.sender!.use(URLCredential(trust: trust), for: challenge)
+                if evaluationSucceeded {
+                    completionHandler(.useCredential, URLCredential(trust: trust))
+                } else {
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                    self.stopTunnel(withMessage: "WGPacketTunnel: Error during the certificate validation")
+                }
+
+            }
+
+        } else {
+            challenge.sender!.cancel(challenge)
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            self.stopTunnel(withMessage: "WGPacketTunnel: request error")
         }
-    }
+        
+      }
+
 }
