@@ -212,19 +212,24 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
 
 extension WGPacketTunnelProvider {
     func startNWConnection(for url: URL, cn: String, completionHandler: @escaping (Error?) -> Void) {
+        wg_log(.info, staticMessage: "Will start NWConnection to add public key")
         let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
         do {
             try connection.connect { error, data in
-                NSLog(">>> >>> Start NWConnection with error: \(error) -- data: \(data)")
                 if let error {
+                    wg_log(.info, staticMessage: "NWConnection did receive error")
                     wg_log(.error, message: error.localizedDescription)
                 } else if let data {
+                    wg_log(.info, staticMessage: "NWConnection did receive data")
                     self.parse(data, withCompletionHandler: completionHandler)
+                } else {
+                    wg_log(.info, staticMessage: "NWConnection did NOT receive error and Data")
                 }
                     
             } completion: {
                // No op
+                wg_log(.info, staticMessage: "NWConnection did complete")
             }
 
         } catch {

@@ -101,6 +101,11 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
         connectivityTimer = nil
         
         wg_log(.info, staticMessage: "Stopping tunnel")
+        if let logFileUrl = FileManager.logFileURL {
+            Logger.global?.writeLog(to: logFileUrl.path)
+        }
+        
+        
         if let handle = handle {
             wgTurnOff(handle)
         }
@@ -114,7 +119,6 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
       
        switch Message(messageData) {
        case .requestLog:
-
             guard let logHelper = self.logViewHelper else {
                 completionHandler(nil)
                 return
