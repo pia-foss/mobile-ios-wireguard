@@ -48,7 +48,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         let baseUrl = WGClientEndpoint.addKey(serverAddress: serverAddress,
                                               port: PIAWireguardConstants.remotePort).url
         
-        let params = [PIAWireguardConstants.API.publicKeyParameter: wgPublicKey.base64EncodedString(),
+        let params = [PIAWireguardConstants.API.publicKeyParameter: generateURLEncodedString(from: wgPublicKey),
                       PIAWireguardConstants.API.authTokenParameter: piaToken]
         
         var reqURLComponents = URLComponents(string: baseUrl.absoluteString)
@@ -80,7 +80,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         wgPublicKey = keys.publicKey
         wgPrivateKey = keys.secretKey
         
-        let reqURL = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(wgPublicKey.base64EncodedString())&pt=\(piaToken)")
+        let reqURL = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(generateURLEncodedString(from: wgPublicKey))&pt=\(piaToken)")
         
         if let reqURL,
            let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String {
@@ -216,6 +216,7 @@ extension WGPacketTunnelProvider {
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
         do {
             try connection.connect { error, data in
+                NSLog(">>> >>> Start NWConnection with error: \(error) -- data: \(data)")
                 if let error {
                     wg_log(.error, message: error.localizedDescription)
                 } else if let data {
@@ -230,5 +231,19 @@ extension WGPacketTunnelProvider {
             wg_log(.error, message: error.localizedDescription)
             stopTunnel(withMessage: error.localizedDescription)
         }
+    }
+}
+
+
+private extension WGPacketTunnelProvider {
+
+    func generateURLEncodedString(from data: Data) -> String {
+        var wgKeyString = data.base64EncodedString().addingPercentEncoding(withAllowedCharacters: .rfc3986Unreserved)!
+        
+        if wgKeyString.contains("+") {
+            wgKeyString = wgKeyString.replacingOccurrences(of: "+", with: "%2B")
+        }
+        
+        return wgKeyString
     }
 }
