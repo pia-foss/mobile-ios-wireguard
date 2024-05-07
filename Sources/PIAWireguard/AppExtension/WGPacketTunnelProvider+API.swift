@@ -215,6 +215,7 @@ extension WGPacketTunnelProvider {
         wg_log(.info, staticMessage: "Will start NWConnection to add public key")
         let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
+        
         do {
             try connection.connect { error, data in
                 if let error {
@@ -234,6 +235,7 @@ extension WGPacketTunnelProvider {
 
         } catch {
             wg_log(.error, message: error.localizedDescription)
+            wg_log(.info, staticMessage: "NWConnection error thrown at start")
             stopTunnel(withMessage: error.localizedDescription)
         }
     }
