@@ -213,7 +213,13 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
 extension WGPacketTunnelProvider {
     func startNWConnection(for url: URL, cn: String, completionHandler: @escaping (Error?) -> Void) {
         wg_log(.info, staticMessage: "Will start NWConnection to add public key")
-        let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
+        
+        guard let anchorCert = getAnchorCertificate() else {
+            wg_log(.error, staticMessage: "Could not find anchor certificate to start NWConnection")
+            return
+        }
+        
+        let configuration = NWConnectionConfiguration(url: url, method: .get, body: nil, certificateValidation: .anchor(certificate: anchorCert, commonName: cn), dataResponseType: .jsonData)
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
         
         do {
@@ -252,5 +258,23 @@ private extension WGPacketTunnelProvider {
         }
         
         return wgKeyString
+    }
+    
+    func getAnchorCertificate() -> SecCertificate? {
+        
+#if SWIFT_PACKAGE
+            let bundle = Bundle.module
+#else
+            let bundle = Bundle(for: WGPacketTunnelProvider.self)
+#endif
+        
+       guard let certURL = bundle.url(forResource: "PIA", withExtension: "der"),
+             let certificateData = try? Data(contentsOf: certURL) as CFData else {
+           wg_log(.info, staticMessage: "WGPacketTunnelProvider: could no find or encode contents of anchor cert")
+           return nil
+       }
+        
+        let caRef = SecCertificateCreateWithData(nil, certificateData)
+        return caRef
     }
 }
