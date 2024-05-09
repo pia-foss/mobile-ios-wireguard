@@ -38,18 +38,21 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
 
         guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
             let msg = "WGPacketTunnel: protocolConfiguration not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: protocolConfiguration not found")
             self.stopTunnel(withMessage: msg)
             return
         }
         
         guard let providerConfiguration = tunnelProtocol.providerConfiguration else {
             let msg = "WGPacketTunnel: providerConfiguration not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: providerConfiguration not found")
             self.stopTunnel(withMessage: msg)
             return
         }
         
         guard let serverAddress = tunnelProtocol.serverAddress else {
             let msg = "WGPacketTunnel: serverAddress not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: serverAddress not found")
             self.stopTunnel(withMessage: msg)
             return
         }
@@ -67,6 +70,7 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
         
         guard let useIP = self.providerConfiguration[PIAWireguardConfiguration.Keys.useIP] as? Bool else {
             let msg = "WGPacketTunnel: use IP key not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: use IP key not found")
             self.stopTunnel(withMessage: msg)
             return
         }
@@ -101,6 +105,8 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
         connectivityTimer = nil
         
         wg_log(.info, staticMessage: "Stopping tunnel")
+        
+        // TODO: Add this only to Dev builds
         if let logFileUrl = FileManager.logFileURL {
             Logger.global?.writeLog(to: logFileUrl.path)
         }
@@ -176,6 +182,7 @@ open class WGPacketTunnelProvider: NEPacketTunnelProvider {
         
         guard let handle = handle else { return }
         
+        wg_log(.info, staticMessage: "Network change detected")
         wg_log(.debug, message: "Network change detected with \(path.status) route and interface order \(path.availableInterfaces)")
 
         #if os(iOS)

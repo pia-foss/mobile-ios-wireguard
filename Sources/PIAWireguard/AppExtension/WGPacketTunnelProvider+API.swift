@@ -130,11 +130,13 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         
         guard let dnsServers = self.providerConfiguration[PIAWireguardConfiguration.Keys.dnsServers] as? [String] else {
             let msg = "WGPacketTunnel: dnsServer not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: dnsServer not found")
             self.stopTunnel(withMessage: msg)
             return
         }
         guard let ping = self.providerConfiguration[PIAWireguardConfiguration.Keys.ping] as? String else {
             let msg = "WGPacketTunnel: ping server not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: ping server not found")
             self.stopTunnel(withMessage: msg)
             return
         }
@@ -142,10 +144,12 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         let packetSize = self.providerConfiguration[PIAWireguardConfiguration.Keys.packetSize] as? Int ?? PIAWireguardConstants.mtu
         
         if let serverResponse = try? JSONDecoder().decode(WGServerResponse.self, from: data) {
+            wg_log(.info, staticMessage: "WGPacketTunnel: NWConnection data was parsed successfully")
             
             self.serverIPAddress = serverResponse.server_ip
             guard !self.serverIPAddress.isEmpty else {
                 let msg = "WGPacketTunnel: Remote address not found"
+                wg_log(.info, staticMessage: "WGPacketTunnel: Remote address not found")
                 self.stopTunnel(withMessage: msg)
                 return
             }
@@ -169,6 +173,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
                                                                             let fileDescriptor = self.tunnelFileDescriptor ?? -1
                                                                             if fileDescriptor < 0 {
                                                                                 let msg = "WGPacketTunnel: could not determine file descriptor"
+                                                                                wg_log(.info, staticMessage: "WGPacketTunnel: could not determine file descriptor")
                                                                                 self.stopTunnel(withMessage: msg)
                                                                                 return
                                                                             }
@@ -196,7 +201,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
                                                                             self.handle = handle
                                                                             self.updateSettings()
                                                                             self.configureNetworkActivityListener()
-                                                                            
+                                                                            wg_log(.info, staticMessage: "WGPacketTunnel: will start the tunnel")
                                                                             startTunnelCompletionHandler(nil)
                                                                             
                                                                         }
@@ -204,6 +209,10 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             
         } else {
             let msg = "WGPacketTunnel: unable to parse data: \(String(data: data, encoding: .utf8) ?? data.description) ourKey: \(self.wgPublicKey.base64EncodedString())"
+            wg_log(.info, staticMessage: "WGPacketTunnel: unable to parse NWConnection data")
+            wg_log(.info, message: "\(msg)")
+            wg_log(.info, message: msg)
+            wg_log(.debug, message: msg)
             self.stopTunnel(withMessage: msg)
         }
     }
@@ -226,6 +235,7 @@ extension WGPacketTunnelProvider {
             try connection.connect { error, data in
                 if let error {
                     wg_log(.info, staticMessage: "NWConnection did receive error")
+                    wg_log(.info, message: error.localizedDescription)
                     wg_log(.error, message: error.localizedDescription)
                 } else if let data {
                     wg_log(.info, staticMessage: "NWConnection did receive data")
@@ -257,6 +267,8 @@ private extension WGPacketTunnelProvider {
             wgKeyString = wgKeyString.replacingOccurrences(of: "+", with: "%2B")
         }
         
+        let logString = String(format: "Generated wg pub key: %@", wgKeyString)
+        wg_log(.info, message: logString)
         return wgKeyString
     }
     
@@ -275,6 +287,13 @@ private extension WGPacketTunnelProvider {
        }
         
         let caRef = SecCertificateCreateWithData(nil, certificateData)
+        
+        if caRef == nil {
+            wg_log(.info, staticMessage: "WGPacketTunnel: anchorCert, could not generate SecCertificate")
+        } else {
+            wg_log(.info, staticMessage: "WGPacketTunnel: SecCertificate generated successfully")
+        }
+        
         return caRef
     }
 }
