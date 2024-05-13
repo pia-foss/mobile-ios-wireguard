@@ -210,8 +210,6 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         } else {
             let msg = "WGPacketTunnel: unable to parse data: \(String(data: data, encoding: .utf8) ?? data.description) ourKey: \(self.wgPublicKey.base64EncodedString())"
             wg_log(.info, staticMessage: "WGPacketTunnel: unable to parse NWConnection data")
-            wg_log(.info, message: "\(msg)")
-            wg_log(.info, message: msg)
             wg_log(.debug, message: msg)
             self.stopTunnel(withMessage: msg)
         }
