@@ -48,7 +48,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         let baseUrl = WGClientEndpoint.addKey(serverAddress: serverAddress,
                                               port: PIAWireguardConstants.remotePort).url
         
-        let params = [PIAWireguardConstants.API.publicKeyParameter: wgPublicKey.base64EncodedString(),
+        let params = [PIAWireguardConstants.API.publicKeyParameter: generateURLEncodedString(from: wgPublicKey),
                       PIAWireguardConstants.API.authTokenParameter: piaToken]
         
         var reqURLComponents = URLComponents(string: baseUrl.absoluteString)
@@ -80,7 +80,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         wgPublicKey = keys.publicKey
         wgPrivateKey = keys.secretKey
         
-        let reqURL = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(wgPublicKey.base64EncodedString())&pt=\(piaToken)")
+        let reqURL = URL(string: "https://\(serverAddress):1337/addKey?pubkey=\(generateURLEncodedString(from: wgPublicKey))&pt=\(piaToken)")
         
         if let reqURL,
            let cn = self.providerConfiguration[PIAWireguardConfiguration.Keys.cn] as? String {
@@ -130,11 +130,13 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         
         guard let dnsServers = self.providerConfiguration[PIAWireguardConfiguration.Keys.dnsServers] as? [String] else {
             let msg = "WGPacketTunnel: dnsServer not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: dnsServer not found")
             self.stopTunnel(withMessage: msg)
             return
         }
         guard let ping = self.providerConfiguration[PIAWireguardConfiguration.Keys.ping] as? String else {
             let msg = "WGPacketTunnel: ping server not found"
+            wg_log(.info, staticMessage: "WGPacketTunnel: ping server not found")
             self.stopTunnel(withMessage: msg)
             return
         }
@@ -142,10 +144,12 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
         let packetSize = self.providerConfiguration[PIAWireguardConfiguration.Keys.packetSize] as? Int ?? PIAWireguardConstants.mtu
         
         if let serverResponse = try? JSONDecoder().decode(WGServerResponse.self, from: data) {
+            wg_log(.info, staticMessage: "WGPacketTunnel: NWConnection data was parsed successfully")
             
             self.serverIPAddress = serverResponse.server_ip
             guard !self.serverIPAddress.isEmpty else {
                 let msg = "WGPacketTunnel: Remote address not found"
+                wg_log(.info, staticMessage: "WGPacketTunnel: Remote address not found")
                 self.stopTunnel(withMessage: msg)
                 return
             }
@@ -169,6 +173,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
                                                                             let fileDescriptor = self.tunnelFileDescriptor ?? -1
                                                                             if fileDescriptor < 0 {
                                                                                 let msg = "WGPacketTunnel: could not determine file descriptor"
+                                                                                wg_log(.info, staticMessage: "WGPacketTunnel: could not determine file descriptor")
                                                                                 self.stopTunnel(withMessage: msg)
                                                                                 return
                                                                             }
@@ -196,7 +201,7 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
                                                                             self.handle = handle
                                                                             self.updateSettings()
                                                                             self.configureNetworkActivityListener()
-                                                                            
+                                                                            wg_log(.info, staticMessage: "WGPacketTunnel: will start the tunnel")
                                                                             startTunnelCompletionHandler(nil)
                                                                             
                                                                         }
@@ -204,6 +209,8 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
             
         } else {
             let msg = "WGPacketTunnel: unable to parse data: \(String(data: data, encoding: .utf8) ?? data.description) ourKey: \(self.wgPublicKey.base64EncodedString())"
+            wg_log(.info, staticMessage: "WGPacketTunnel: unable to parse NWConnection data")
+            wg_log(.debug, message: msg)
             self.stopTunnel(withMessage: msg)
         }
     }
@@ -212,23 +219,79 @@ extension WGPacketTunnelProvider: URLSessionDelegate {
 
 extension WGPacketTunnelProvider {
     func startNWConnection(for url: URL, cn: String, completionHandler: @escaping (Error?) -> Void) {
-        let configuration = NWConnectionConfiguration(url: url, method: .get, certificateValidation: .anchorCert(cn: cn), dataResponseType: .jsonData)
+        wg_log(.info, staticMessage: "Will start NWConnection to add public key")
+        
+        guard let anchorCert = getAnchorCertificate() else {
+            wg_log(.error, staticMessage: "Could not find anchor certificate to start NWConnection")
+            return
+        }
+        
+        let configuration = NWConnectionConfiguration(url: url, method: .get, body: nil, certificateValidation: .anchor(certificate: anchorCert, commonName: cn), dataResponseType: .jsonData)
         let connection = NWHttpConnectionFactory.makeNWHttpConnection(with: configuration)
+        
         do {
             try connection.connect { error, data in
                 if let error {
+                    wg_log(.info, staticMessage: "NWConnection did receive error")
+                    wg_log(.info, message: error.localizedDescription)
                     wg_log(.error, message: error.localizedDescription)
                 } else if let data {
+                    wg_log(.info, staticMessage: "NWConnection did receive data")
                     self.parse(data, withCompletionHandler: completionHandler)
+                } else {
+                    wg_log(.info, staticMessage: "NWConnection did NOT receive error and Data")
                 }
                     
             } completion: {
                // No op
+                wg_log(.info, staticMessage: "NWConnection did complete")
             }
 
         } catch {
             wg_log(.error, message: error.localizedDescription)
+            wg_log(.info, staticMessage: "NWConnection error thrown at start")
             stopTunnel(withMessage: error.localizedDescription)
         }
+    }
+}
+
+
+private extension WGPacketTunnelProvider {
+
+    func generateURLEncodedString(from data: Data) -> String {
+        var wgKeyString = data.base64EncodedString().addingPercentEncoding(withAllowedCharacters: .rfc3986Unreserved)!
+        
+        if wgKeyString.contains("+") {
+            wgKeyString = wgKeyString.replacingOccurrences(of: "+", with: "%2B")
+        }
+        
+        let logString = String(format: "Generated wg pub key: %@", wgKeyString)
+        wg_log(.info, message: logString)
+        return wgKeyString
+    }
+    
+    func getAnchorCertificate() -> SecCertificate? {
+        
+#if SWIFT_PACKAGE
+            let bundle = Bundle.module
+#else
+            let bundle = Bundle(for: WGPacketTunnelProvider.self)
+#endif
+        
+       guard let certURL = bundle.url(forResource: "PIA", withExtension: "der"),
+             let certificateData = try? Data(contentsOf: certURL) as CFData else {
+           wg_log(.info, staticMessage: "WGPacketTunnelProvider: could no find or encode contents of anchor cert")
+           return nil
+       }
+        
+        let caRef = SecCertificateCreateWithData(nil, certificateData)
+        
+        if caRef == nil {
+            wg_log(.info, staticMessage: "WGPacketTunnel: anchorCert, could not generate SecCertificate")
+        } else {
+            wg_log(.info, staticMessage: "WGPacketTunnel: SecCertificate generated successfully")
+        }
+        
+        return caRef
     }
 }
