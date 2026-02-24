@@ -26,28 +26,36 @@ import os.log
 import __PIAWireGuardNative
 
 extension WGPacketTunnelProvider {
-    
+
+    /// Starts Phase 1 of dead-tunnel detection: periodic RX byte monitoring.
+    /// Called once the tunnel is established.
     func configureNetworkActivityListener() {
-        
         DispatchQueue.main.async {
             if self.connectivityTimer == nil {
-                self.connectivityTimer = Timer.scheduledTimer(timeInterval: self.connectivityInterval,
-                                                             target: self,
-                                                             selector: #selector(self.checkNetworkActivity),
-                                                             userInfo: nil,
-                                                             repeats: true)
+                self.connectivityTimer = Timer.scheduledTimer(
+                    timeInterval: self.connectivityInterval,
+                    target: self,
+                    selector: #selector(self.checkNetworkActivity),
+                    userInfo: nil,
+                    repeats: true
+                )
                 self.connectivityTimer?.tolerance = 5
             }
         }
-
     }
-    
+
+    /// Phase 1 — RX byte monitoring.
+    ///
+    /// Every tick, compares the current RX byte count against the previous reading:
+    /// - Bytes changed → traffic is flowing normally; reset the counter and stay in Phase 1.
+    /// - Bytes unchanged → the tunnel looks stalled; increment the counter.
+    ///   Once `wireGuardMaxConnectionAttempts` consecutive flat readings are reached,
+    ///   switch to Phase 2 (ping monitoring) to confirm the server is truly unreachable.
     @objc private func checkNetworkActivity() {
- 
         let currentRxBytes = self.latestWireGuardSettings.rx_bytes
-        
+
         self.updateSettings()
-        
+
         if currentRxBytes == self.latestWireGuardSettings.rx_bytes {
             if wireGuardConnectionAttempts < wireGuardMaxConnectionAttempts {
                 wg_log(.info, message: "Bytes not updated, retrying in 10 seconds")
@@ -56,57 +64,66 @@ extension WGPacketTunnelProvider {
                 wg_log(.info, message: "Max number of attempts to check if the tunnel is alive reached. We start to send pings now")
                 wireGuardConnectionAttempts = 0
                 self.connectivityTimer?.invalidate()
-                self.connectivityTimer = Timer.scheduledTimer(timeInterval: 10,
-                                                                target: self,
-                                                                selector: #selector(self.checkPingActivity),
-                                                                userInfo: nil,
-                                                                repeats: true)
+                self.connectivityTimer = Timer.scheduledTimer(
+                    timeInterval: 10,
+                    target: self,
+                    selector: #selector(self.checkPingActivity),
+                    userInfo: nil,
+                    repeats: true
+                )
                 checkIsConnectedToNetwork()
             }
         } else {
             wg_log(.info, message: "Bytes updated, retrying in 10 seconds")
             wireGuardConnectionAttempts = 0
         }
-        
     }
-    
-    @objc private func checkPingActivity() {
 
+    /// Phase 2 — Ping + RX byte monitoring.
+    ///
+    /// The pinger is already sending packets in the background (started by `checkIsConnectedToNetwork`).
+    /// Every tick, checks RX bytes only:
+    /// - RX bytes changed → actual traffic got through; server is alive. Stop the pinger,
+    ///   switch back to Phase 1.
+    /// - RX bytes unchanged → server is not responding; increment the counter.
+    ///   Once `wireGuardMaxConnectionAttempts` consecutive flat readings are reached,
+    ///   kill the tunnel with `.connectivityCheckFailed` so the app can trigger a server failover.
+    ///
+    /// Note: TX bytes are intentionally ignored here. WireGuard continuously sends handshake
+    /// initiations while trying to reconnect, which keeps bumping TX even when the server is
+    /// completely unreachable. Checking TX would reset the counter and cause an infinite loop.
+    @objc private func checkPingActivity() {
         let currentRxBytes = self.latestWireGuardSettings.rx_bytes
-        let currentTxBytes = self.latestWireGuardSettings.tx_bytes
-        
+
         self.updateSettings()
-        
-        if currentRxBytes == self.latestWireGuardSettings.rx_bytes &&
-        currentTxBytes == self.latestWireGuardSettings.tx_bytes {
+
+        if currentRxBytes == self.latestWireGuardSettings.rx_bytes {
             if wireGuardConnectionAttempts < wireGuardMaxConnectionAttempts {
-                wg_log(.info, message: "Sending pings every 2 seconds and bytes not updated, retrying in 10 seconds")
+                wg_log(.info, message: "Sending pings every 2 seconds and rx bytes not updated, retrying in 10 seconds")
                 wireGuardConnectionAttempts += 1
             } else {
                 wg_log(.info, message: "Max number of attempts to check if the tunnel is alive reached. Stopping the tunnel now")
                 wireGuardConnectionAttempts = 0
-                cancelTunnelWithError(nil)
+                cancelTunnelWithError(PacketTunnelProviderError.connectivityCheckFailed)
             }
         } else {
-            wg_log(.info, message: "Bytes updated. We start to check the bytes as normal every 10 seconds")
+            wg_log(.info, message: "RX bytes updated. We start to check the bytes as normal every 10 seconds")
             wireGuardConnectionAttempts = 0
             pinger?.stop()
             self.connectivityTimer?.invalidate()
-            self.connectivityTimer = Timer.scheduledTimer(timeInterval: 10,
-                                                            target: self,
-                                                            selector: #selector(self.checkNetworkActivity),
-                                                            userInfo: nil,
-                                                            repeats: true)
-
+            self.connectivityTimer = Timer.scheduledTimer(
+                timeInterval: 10,
+                target: self,
+                selector: #selector(self.checkNetworkActivity),
+                userInfo: nil,
+                repeats: true
+            )
         }
-
     }
-    
+
+    /// Starts the pinger used during Phase 2 to generate traffic and confirm
+    /// whether the server is truly unreachable.
     private func checkIsConnectedToNetwork() {
-        
         pinger?.start()
-
     }
-    
 }
-
