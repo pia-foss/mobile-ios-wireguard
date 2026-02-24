@@ -3,7 +3,7 @@
 
 import NetworkExtension
 
-public enum PacketTunnelProviderError: String, Error {
+public enum PacketTunnelProviderError: Int, CustomNSError {
     case savedProtocolConfigurationIsInvalid
     case dnsResolutionFailure
     case couldNotStartBackend
