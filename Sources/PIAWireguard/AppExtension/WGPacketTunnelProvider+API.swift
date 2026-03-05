@@ -232,13 +232,14 @@ extension WGPacketTunnelProvider {
             try connection.connect { error, data in
                 if let error {
                     wg_log(.info, staticMessage: "NWConnection did receive error")
-                    wg_log(.info, message: error.localizedDescription)
                     wg_log(.error, message: error.localizedDescription)
+                    completionHandler(error)
                 } else if let responseData = data?.data as? Data {
                     wg_log(.info, staticMessage: "NWConnection did receive data")
                     self.parse(responseData, withCompletionHandler: completionHandler)
                 } else {
                     wg_log(.info, staticMessage: "NWConnection did NOT receive error and Data")
+                    completionHandler(nil)
                 }
                     
             } completion: {
