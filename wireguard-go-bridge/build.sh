@@ -21,7 +21,8 @@ rsync --exclude="pkg/obj/go-build" -a "$(go env GOROOT)/" "$GOROOT/"
 export GOROOT
 cat goruntime-*.diff | patch -p1 -fN -r- -d "$GOROOT"
 
-BUILD_CFLAGS="-fembed-bitcode -Wno-unused-command-line-argument"
+BUILD_CFLAGS="-Wno-unused-command-line-argument"
+CATALYST_DEPLOYMENT_TARGET=15.0
 
 # Build the library for each target
 function build_arch() {
@@ -30,8 +31,14 @@ function build_arch() {
     local SDKNAME="$3"
     # Find the SDK path
     local SDKPATH
-    SDKPATH="$(xcrun --sdk "$SDKNAME" --show-sdk-path)"
-    local FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH"
+    local FULL_CFLAGS
+    if [[ "$SDKNAME" == "maccatalyst" ]]; then
+        SDKPATH="$(xcrun --sdk macosx --show-sdk-path)"
+        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -target ${ARCH}-apple-ios${CATALYST_DEPLOYMENT_TARGET}-macabi"
+    else
+        SDKPATH="$(xcrun --sdk "$SDKNAME" --show-sdk-path)"
+        FULL_CFLAGS="$BUILD_CFLAGS -fembed-bitcode -isysroot $SDKPATH -arch $ARCH"
+    fi
     SDK_LIBRARY_OUTPUT="$LIBRARY_OUTPUT_ROOT/$SDKNAME"
     mkdir -p $SDK_LIBRARY_OUTPUT/include
     CGO_ENABLED=1 CGO_CFLAGS="$FULL_CFLAGS" CGO_LDFLAGS="$FULL_CFLAGS" GOOS=darwin GOARCH="$GOARCH" \
@@ -42,12 +49,12 @@ function build_arch() {
     rm "$SDK_LIBRARY_OUTPUT/$LBAME-$ARCH.a"
 }
 
-
 build_arch x86_64 amd64 iphonesimulator
 build_arch arm64 arm64 iphoneos
 build_arch arm64 arm64 iphonesimulator
+build_arch x86_64 amd64 maccatalyst
+build_arch arm64 arm64 maccatalyst
 
 # Copy artifacts
 mkdir -p $ARTIFACTS_ROOT
 cp -r $LIBRARY_OUTPUT_ROOT/* "$ARTIFACTS_ROOT"
-

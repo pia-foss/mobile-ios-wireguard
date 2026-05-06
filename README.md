@@ -19,6 +19,8 @@ The library uses 2 scripts to generate the WireGuard framework.
 
 Together they generate a `PIAWireguardGo.xcframework` under the `frameworks/` directory for the following archs `arm64 armv7 x86_64`.
 
+Alternatively, `make build` will generate the library in the `frameworks/` folder with all supported architectures.
+
 ## Installation
 
 ### Requirements

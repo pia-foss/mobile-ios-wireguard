@@ -7,6 +7,7 @@ let package = Package(
     name: "PIAWireguard",
     platforms: [
         .iOS(.v15),
+        .macCatalyst(.v15),
         .tvOS(.v17)
     ],
     products: [
