@@ -21,7 +21,7 @@ rsync --exclude="pkg/obj/go-build" -a "$(go env GOROOT)/" "$GOROOT/"
 export GOROOT
 cat goruntime-*.diff | patch -p1 -fN -r- -d "$GOROOT"
 
-BUILD_CFLAGS="-Wno-unused-command-line-argument"
+BUILD_CFLAGS="-fembed-bitcode -Wno-unused-command-line-argument"
 CATALYST_DEPLOYMENT_TARGET=15.0
 
 # Build the library for each target
@@ -34,10 +34,10 @@ function build_arch() {
     local FULL_CFLAGS
     if [[ "$SDKNAME" == "maccatalyst" ]]; then
         SDKPATH="$(xcrun --sdk macosx --show-sdk-path)"
-        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -target ${ARCH}-apple-ios${CATALYST_DEPLOYMENT_TARGET}-macabi"
+        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH -target ${ARCH}-apple-ios${CATALYST_DEPLOYMENT_TARGET}-macabi"
     else
         SDKPATH="$(xcrun --sdk "$SDKNAME" --show-sdk-path)"
-        FULL_CFLAGS="$BUILD_CFLAGS -fembed-bitcode -isysroot $SDKPATH -arch $ARCH"
+        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH"
     fi
     SDK_LIBRARY_OUTPUT="$LIBRARY_OUTPUT_ROOT/$SDKNAME"
     mkdir -p $SDK_LIBRARY_OUTPUT/include
