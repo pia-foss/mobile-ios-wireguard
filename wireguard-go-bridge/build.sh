@@ -41,8 +41,8 @@ function build_arch() {
     fi
     SDK_LIBRARY_OUTPUT="$LIBRARY_OUTPUT_ROOT/$SDKNAME"
     mkdir -p $SDK_LIBRARY_OUTPUT/include
-    CGO_ENABLED=1 CGO_CFLAGS="$FULL_CFLAGS" CGO_LDFLAGS="$FULL_CFLAGS" GOOS=darwin GOARCH="$GOARCH" \
-        go build -tags ios -ldflags=-w -trimpath -v -o "$SDK_LIBRARY_OUTPUT/$LBAME-$ARCH.a" -buildmode c-archive
+    CGO_ENABLED=1 CGO_CFLAGS="$FULL_CFLAGS" CGO_LDFLAGS="$FULL_CFLAGS" GOOS="ios" GOARCH="$GOARCH" \
+        go build -ldflags=-w -trimpath -v -o "$SDK_LIBRARY_OUTPUT/$LBAME-$ARCH.a" -buildmode c-archive
     mv $SDK_LIBRARY_OUTPUT/*.h $SDK_LIBRARY_OUTPUT/include
     LIPO="${LIPO:-lipo}"
    "$LIPO" -create -output "$SDK_LIBRARY_OUTPUT/$LBAME.a" $SDK_LIBRARY_OUTPUT/*.a
