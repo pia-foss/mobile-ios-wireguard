@@ -18,10 +18,12 @@ mkdir -p "$BUILD_ROOT"
 GOROOT="$BUILD_ROOT/goroot/" # Not exported yet, still need the original GOROOT to copy
 mkdir -p "$GOROOT"
 rsync --exclude="pkg/obj/go-build" -a "$(go env GOROOT)/" "$GOROOT/"
+chmod -R u+w "$GOROOT"
 export GOROOT
 cat goruntime-*.diff | patch -p1 -fN -r- -d "$GOROOT"
 
 BUILD_CFLAGS="-fembed-bitcode -Wno-unused-command-line-argument"
+IOS_DEPLOYMENT_TARGET=15.0
 CATALYST_DEPLOYMENT_TARGET=15.0
 
 # Build the library for each target
@@ -35,9 +37,12 @@ function build_arch() {
     if [[ "$SDKNAME" == "maccatalyst" ]]; then
         SDKPATH="$(xcrun --sdk macosx --show-sdk-path)"
         FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH -target ${ARCH}-apple-ios${CATALYST_DEPLOYMENT_TARGET}-macabi"
+    elif [[ "$SDKNAME" == "iphonesimulator" ]]; then
+        SDKPATH="$(xcrun --sdk "$SDKNAME" --show-sdk-path)"
+        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH -target ${ARCH}-apple-ios${IOS_DEPLOYMENT_TARGET}-simulator"
     else
         SDKPATH="$(xcrun --sdk "$SDKNAME" --show-sdk-path)"
-        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH"
+        FULL_CFLAGS="$BUILD_CFLAGS -isysroot $SDKPATH -arch $ARCH -target ${ARCH}-apple-ios${IOS_DEPLOYMENT_TARGET}"
     fi
     SDK_LIBRARY_OUTPUT="$LIBRARY_OUTPUT_ROOT/$SDKNAME"
     mkdir -p $SDK_LIBRARY_OUTPUT/include
